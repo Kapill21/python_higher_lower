@@ -3,88 +3,77 @@ import game_data
 import random
 
 
-def play_game():
-    def get_info():
-        info = random.choice(game_data.data)
-        position = game_data.data.index(info)
-
-        name = game_data.data[position]['name']
-        followers = int(game_data.data[position]['follower_count'])
-        description = game_data.data[position]['description']
-        country = game_data.data[position]['country']
-
-        info2 = random.choice(game_data.data)
-        while info2 == info:
-            info2 = random.choice(game_data.data)
-        position2 = game_data.data.index(info2)
-
-        name2 = game_data.data[position2]['name']
-        followers2 = int(game_data.data[position2]['follower_count'])
-        description2 = game_data.data[position2]['description']
-        country2 = game_data.data[position2]['country']
 
 
-        score = 0
-        game_over = False
-        while not game_over:
-            print(art.logo)
-            print(f'Compare A: {name}, a {description}, from {country}.')
-            print(art.vs)
-            print(f'Against B: {name2}, a {description2}, from {country2}.')
-
-            guess = input('Who has more followers? Type \'A\' or \'B\': ').lower()
-            if guess == 'a' and followers > followers2:
-                score += 1
-                print(f'You\'re right! Current score: {score}')
-
-                name = game_data.data[position2]['name']
-                followers = int(game_data.data[position2]['follower_count'])
-                description = game_data.data[position2]['description']
-                country = game_data.data[position2]['country']
-
-                info2 = random.choice(game_data.data)
-                position2 = game_data.data.index(info2)
-                name2 = game_data.data[position2]['name']
-                followers2 = int(game_data.data[position2]['follower_count'])
-                description2 = game_data.data[position2]['description']
-                country2 = game_data.data[position2]['country']
+def get_random_account(exclude=None):
+    """Return a random account dict, optionally excluding one account."""
+    account = random.choice(game_data.data)
+    while exclude is not None and account == exclude:
+        account = random.choice(game_data.data)
+    return account
 
 
-            elif guess == 'a' and followers2 > followers:
-                print(f'Sorry, that\'s wrong. Final score: {score}')
-                if input('play again?: ') == 'y':
-                    play_game()
-                game_over = True
+def format_account(account):
+    """Return a readable string for the account."""
+    name = account["name"]
+    description = account["description"]
+    country = account["country"]
+    return f"{name}, a {description}, from {country}"
 
 
-
-            elif guess == 'b' and followers2 > followers:
-                score += 1
-                print(f'You\'re right! Current score: {score}')
-
-
-                name = game_data.data[position2]['name']
-                followers = int(game_data.data[position2]['follower_count'])
-                description = game_data.data[position2]['description']
-                country = game_data.data[position2]['country']
-
-                info2 = random.choice(game_data.data)
-                position2 = game_data.data.index(info2)
-                name2 = game_data.data[position2]['name']
-                followers2 = int(game_data.data[position2]['follower_count'])
-                description2 = game_data.data[position2]['description']
-                country2 = game_data.data[position2]['country']
+def get_guess():
+    """Prompt until the user enters A or B. Return 'a' or 'b'."""
+    guess = input("Who has more followers? Type 'A' or 'B': ").lower()
+    while guess not in ("a", "b"):
+        guess = input("Please type only 'A' or 'B': ").lower()
+    return guess
 
 
-            elif guess == 'b' and followers > followers2:
-                print(f'Sorry, that\'s wrong. Final score: {score}')
-                if input('play again?: ') == 'y':
-                    play_game()
-                game_over = True
+def play_round():
+    """Play one full game until the user guesses wrong."""
+    score = 0
+
+    account_a = get_random_account()
+    account_b = get_random_account(exclude=account_a)
+
+    game_over = False
+    while not game_over:
+        print(art.logo)
+        print(f"Compare A: {format_account(account_a)}.")
+        print(art.vs)
+        print(f"Against B: {format_account(account_b)}.")
+
+        guess = get_guess()
+
+        a_followers = int(account_a["follower_count"])
+        b_followers = int(account_b["follower_count"])
+
+        correct = "a" if a_followers > b_followers else "b"
+
+        if guess == correct:
+            score += 1
+            print(f"You're right! Current score: {score}\n")
+
+            
+            account_a = account_b
+            account_b = get_random_account(exclude=account_a)
+        else:
+            print(f"Sorry, that's wrong. Final score: {score}")
+            game_over = True
 
 
+def main():
+    playing = True
+    while playing:
+        play_round()
+        again = input("Play again? (y/n): ").lower()
+        while again not in ("y", "n"):
+            again = input("Please type 'y' or 'n': ").lower()
+        playing = (again == "y")
 
-    get_info()
+
+if __name__ == "__main__":
+    main()
 
 
 
